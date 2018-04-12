@@ -1,7 +1,19 @@
-package edu.sjsu.cmpe275.lab2.Passenger;
+package edu.sjsu.cmpe275.lab2.entity;
 
-public class Passenger {
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
+public class PassengerDetails {
     private String id;
+
+    private String firstname;
+
+    private String lastname;
+
+    private int age;
+
+    public PassengerDetails(Passenger passenger) {
+    }
 
     public String getId() {
         return id;
@@ -51,9 +63,7 @@ public class Passenger {
         this.phone = phone;
     }
 
-    private String firstname;
-    private String lastname;
-    private int age;
     private String gender;
+
     private String phone;
 }
