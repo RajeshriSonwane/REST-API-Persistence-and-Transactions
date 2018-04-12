@@ -1,15 +1,25 @@
 package edu.sjsu.cmpe275.lab2.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 @XmlRootElement
 @Entity
 @Table(name = "flight")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "passengers")
 public class Flight {
 
     @Id
@@ -19,7 +29,11 @@ public class Flight {
     private double price;
     private String origin;
     private String destination;
+
+    @JsonFormat(pattern = "yyyy-MM-dd-hh")
     private Date departureTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd-hh")
     private Date arrivalTime;
     private int seatsLeft;
     private String description;
@@ -27,10 +41,13 @@ public class Flight {
     @Embedded
     private Plane plane;  // Embedded
 
-    @Transient
-    private List<Passenger> passengers;
+    @ManyToMany(targetEntity = Passenger.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<Passenger> passengers = new HashSet<Passenger>();
 
-    public Flight(){
+    @ManyToMany(mappedBy = "flights")
+    private List<Reservation> reservations;
+
+    public Flight() {
 
     }
 
@@ -44,9 +61,20 @@ public class Flight {
         this.seatsLeft = seatsLeft;
         this.description = description;
         this.plane = plane;
-        this.passengers = passengers;
+        this.passengers = (Set<Passenger>) passengers;
+    }
 
+    public Flight(String flightNumber, int price, String from, String to, String departureTime, String arrivalTime, String description, int seatsLeft, Plane plane) {
+    }
 
+    /**
+     * Gets reservations.
+     *
+     * @return the reservations
+     */
+    @JsonIgnore
+    public List<Reservation> getReservations() {
+        return reservations;
     }
 
     public String getFlightNumber() {
@@ -106,7 +134,7 @@ public class Flight {
     }
 
     public String getDescription() {
-        return description;
+        return null;
     }
 
     public void setDescription(String description) {
@@ -121,11 +149,28 @@ public class Flight {
         this.plane = plane;
     }
 
-    public List<Passenger> getPassengers() {
+    public Set<Passenger> getPassengers() {
         return passengers;
     }
 
-    public void setPassengers(List<Passenger> passengers) {
+    public void setPassengers(Set<Passenger> passengers) {
         this.passengers = passengers;
+    }
+
+    /**
+     * Increment seats left by one.
+     */
+    public void incrementSeatsLeftByOne() {
+        seatsLeft += 1;
+    }
+
+    /**
+     * Decrement seats left by one boolean.
+     *
+     * @return the boolean
+     */
+    public boolean decrementSeatsLeftByOne() {
+
+        return --seatsLeft == -1;
     }
 }

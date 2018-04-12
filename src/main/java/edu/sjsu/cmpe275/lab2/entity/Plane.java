@@ -21,7 +21,7 @@ public class Plane {
     private int year;
 
     public Plane(){
-        
+
     }
 
     public Plane(int capacity, String model, String manufacturer, int year) {

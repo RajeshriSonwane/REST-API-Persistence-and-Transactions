@@ -10,6 +10,9 @@ public class BadRequest {
         this.msg = msg;
     }
 
+    public BadRequest(Response response) {
+    }
+
     public int getCode() {
         return code;
     }

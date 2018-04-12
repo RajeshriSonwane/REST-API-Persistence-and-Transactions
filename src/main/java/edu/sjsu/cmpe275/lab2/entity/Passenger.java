@@ -1,6 +1,8 @@
 package edu.sjsu.cmpe275.lab2.entity;
 
-import edu.sjsu.cmpe275.lab2.entity.Reservation;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -10,32 +12,47 @@ import java.util.List;
 @XmlRootElement
 @Entity
 @Table(name = "passenger")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
 public class Passenger {
 
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
     private String id;
+
+    @Column(name= "firstname")
     private String firstname;
+
+    @Column(name= "lastname")
     private String lastname;
+
+    @Column(name= "age")
     private int age;
+
+    @Column(name= "gender")
     private String gender;
+
+    @Column(name = "phone", nullable = false, unique = true)
     private String phone;
 
     // reservation made by the passenger should also be deleted.
-    @OneToMany(mappedBy = "passengerID", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "passenger", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations;
 
     public Passenger(){
 
     }
-    public Passenger(String firstname, String lastname, int age, String gender, String phone, List<Reservation> reservations) {
+    public Passenger(String firstname, String lastname, int age, String gender, String phone) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.age = age;
         this.gender = gender;
         this.phone = phone;
-        this.reservations = reservations;
+    }
+
+    public Passenger(Passenger passenger) {
     }
 
     public String getId() {
@@ -86,11 +103,7 @@ public class Passenger {
         this.phone = phone;
     }
 
-    public List<Reservation> getReservations() {
-        return reservations;
-    }
+    public List<Reservation> getReservations() {        return reservations;    }
 
-    public void setReservations(List<Reservation> reservations) {
-        this.reservations = reservations;
-    }
+   public void setReservations(List<Reservation> reservations) {        this.reservations = reservations;    }
 }
