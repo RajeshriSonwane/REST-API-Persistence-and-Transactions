@@ -57,7 +57,7 @@ public class FlightController {
             return getFlight(flightNumber);
 
         } else {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Xml param; found in invalid state!")),
+            return new ResponseEntity<>(new BadRequest(400, "Xml param; found in invalid state!"),
                     HttpStatus.BAD_REQUEST);
         }
 
@@ -68,8 +68,8 @@ public class FlightController {
         Flight flight = flightRepository.findOne(flightNumber);
 
         if (flight == null) {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(404, "Sorry, the requested flight with number "
-                    + flightNumber + " does not exist")), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new BadRequest(404, "Sorry, the requested flight with number "
+                    + flightNumber + " does not exist"), HttpStatus.NOT_FOUND);
 
         } else {
             return new ResponseEntity<>(flight, HttpStatus.OK);
@@ -110,7 +110,7 @@ public class FlightController {
 
             if(origin==null||destination==null||origin==""||destination==""||departureTime==null||arrivalTime==null ||departureTime==""||arrivalTime==""||description==null||
                     description==""||model==null||model==""||manufacturer==null||manufacturer==""||price==0||capacity==0||yearOfManufacture==0){
-                    return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "all parameters are not filled")), HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(new BadRequest(400, "all parameters are not filled"), HttpStatus.BAD_REQUEST);
             }
 
             // to update the seatsLeft when capacity is modified
@@ -118,15 +118,15 @@ public class FlightController {
 
 
             if (capacity < 0) {
-                return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Capacity can't be negative value!")), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new BadRequest(400, "Capacity can't be negative value!"), HttpStatus.BAD_REQUEST);
             }
 
             if (arrivalTime.equals(departureTime)) {
-                return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Arrival and Departure Time can't be same!")), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new BadRequest(400, "Arrival and Departure Time can't be same!"), HttpStatus.BAD_REQUEST);
             }
 
             if (flight != null && capacity < flight.getReservations().size()) {
-                return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "New capacity can't be less than the reservations for that flight!")), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new BadRequest(400, "New capacity can't be less than the reservations for that flight!"), HttpStatus.BAD_REQUEST);
             }
 
             int seatsLeft = capacity;
@@ -158,7 +158,7 @@ public class FlightController {
                 Collections.sort(intervals, new IntervalStartComparator());
                 // check Time-Overlap for a certain passenger
                 if (isOverlapping(intervals)) {
-                    return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Passenger will have overlapping flight time!")), HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(new BadRequest(400, "Passenger will have overlapping flight time!"), HttpStatus.BAD_REQUEST);
                 }
             }
             else {
@@ -176,7 +176,7 @@ public class FlightController {
                 dateA = sdf.parse(arrivalTime);
             } catch (ParseException e) {
                 e.printStackTrace();
-                return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Invalid Date format")), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new BadRequest(400, "Invalid Date format"), HttpStatus.BAD_REQUEST);
 
             }
 
@@ -192,14 +192,10 @@ public class FlightController {
             // save to db
             Flight flightObjFromDb = flightRepository.save(flight);
 
-            //return new ResponseEntity<>(new BadRequestController(new BadRequest(200, "Inserted")), HttpStatus.OK);
-
             return getFlight(flightNumber);
-            //return new ResponseEntity<>(flightObjFromDb, HttpStatus.OK);
-
 
         }catch (DataIntegrityViolationException e){
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "another passenger with the same number already exists.")), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new BadRequest(400, "another passenger with the same number already exists."), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -225,16 +221,15 @@ public class FlightController {
         Flight flight = flightRepository.findOne(flightNumber);
         System.out.println("In delete flight" + flight);
         if (flight == null) {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(404, "Flight with number " + flightNumber + " does not exist")), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new BadRequest(404, "Flight with number " + flightNumber + " does not exist"), HttpStatus.NOT_FOUND);
 
         } else if (!flight.getReservations().isEmpty()) {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Flight with number " + flightNumber + " has one or more reservation")), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new BadRequest(400, "Flight with number " + flightNumber + " has one or more reservation"), HttpStatus.BAD_REQUEST);
 
         } else {
             // remove from db
             flightRepository.delete(flightNumber);
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(200, "Flight with number " + flightNumber +  " is deleted successfully")), HttpStatus.OK);
+            return new ResponseEntity<>(new BadRequest(200, "Flight with number " + flightNumber +  " is deleted successfully"), HttpStatus.OK);
         }
     }
-
 }

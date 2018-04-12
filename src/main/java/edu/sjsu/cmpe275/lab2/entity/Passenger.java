@@ -18,7 +18,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonTypeName("passenger")
 @JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT ,use = JsonTypeInfo.Id.NAME)
-@XmlType(propOrder={"id", "firstname", "lastname", "age", "gender", "reservations"})
+@XmlType(propOrder={"id", "firstname", "lastname", "age", "gender", "phone","reservations"})
 public class Passenger {
 
     @Id

@@ -1,18 +1,22 @@
 package edu.sjsu.cmpe275.lab2.controller;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonView;
 import edu.sjsu.cmpe275.lab2.entity.*;
 import edu.sjsu.cmpe275.lab2.respository.*;
 import edu.sjsu.cmpe275.lab2.util.IntervalStartComparator;
 import edu.sjsu.cmpe275.lab2.util.View;
+import org.json.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 import org.joda.time.Interval;
 
 
@@ -35,10 +39,11 @@ public class ReservationController {
         Reservation reservation = reservationRepository.findOne(number);
 
         if (reservation == null) {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(404, "Sorry, the requested reservation with id " +
-                    number + " does not exist")), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new BadRequest(404, "Sorry, the requested reservation with id " +
+                    number + " does not exist"), HttpStatus.NOT_FOUND);
 
         } else {
+            System.out.println("reservation" + reservation);
             return new ResponseEntity<>(reservation, HttpStatus.OK);
         }
 
@@ -51,7 +56,7 @@ public class ReservationController {
             return new ResponseEntity<>(reservation, HttpStatus.OK);
 
         } else {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Xml param; found in invalid state!")),
+            return new ResponseEntity<>(new BadRequest(400, "Xml param; found in invalid state!"),
                     HttpStatus.BAD_REQUEST);
         }
 
@@ -66,19 +71,19 @@ public class ReservationController {
      */
     @Transactional(Transactional.TxType.REQUIRED)
     @RequestMapping(method = RequestMethod.POST, params = {"passengerId", "flightLists"},
-                    produces = MediaType.APPLICATION_XML_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createReservation(@RequestParam(value = "passengerId") String passengerId,
                                                @RequestParam(value = "flightLists") List<String> flightNumbers) {
 
         Passenger passenger = passengerRepository.findOne(passengerId);
 
         if (passenger == null) {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Passenger with passenger with id " +
-                    passengerId + " does not exist")), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new BadRequest(400, "Passenger with passenger with id " +
+                    passengerId + " does not exist"), HttpStatus.BAD_REQUEST);
         }
 
-        if(flightNumbers.size()==0){
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Flight list is empty")), HttpStatus.BAD_REQUEST);
+        if (flightNumbers.size() == 0) {
+            return new ResponseEntity<>(new BadRequest(400, "Flight list is empty"), HttpStatus.BAD_REQUEST);
         }
 
         List<Flight> flights = new ArrayList<>(); // placeholder for flights
@@ -87,7 +92,7 @@ public class ReservationController {
         Iterable<Flight> itrFlights = flightRepository.findAll(flightNumbers);
         int countFlights = 0;
         double price = 0;
-        for(Flight flight: itrFlights){
+        for (Flight flight : itrFlights) {
             price += flight.getPrice();
 
             Date departureDateTime = (flight.getDepartureTime());
@@ -97,17 +102,17 @@ public class ReservationController {
 
             // The total amount of passengers can not exceed the capacity of the reserved plane.
             if (flight.decrementSeatsLeftByOne()) {
-                return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "The total amount of passengers can not exceed the capacity of the reserved plane.")), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new BadRequest(400, "The total amount of passengers can not exceed the capacity of the reserved plane."), HttpStatus.BAD_REQUEST);
             }
 
             List<Passenger> passengers = flight.getPassengers();
-            if(passengers.contains(passenger)){
-                return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "You already in one flight of the reservation")), HttpStatus.BAD_REQUEST);
+            if (passengers.contains(passenger)) {
+                return new ResponseEntity<>(new BadRequest(400, "You already in one flight of the reservation"), HttpStatus.BAD_REQUEST);
 
-            } else{
+            } else {
                 int seat = flight.getSeatsLeft();
-                if(seat == 0) {
-                    return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Some flight in your reservation is full, cannot reservate for you")), HttpStatus.BAD_REQUEST);
+                if (seat == 0) {
+                    return new ResponseEntity<>(new BadRequest(400, "Some flight in your reservation is full, cannot reservate for you"), HttpStatus.BAD_REQUEST);
                 } else {
                     seat--;
                 }
@@ -120,7 +125,7 @@ public class ReservationController {
         }
 
         if (countFlights != flightNumbers.size()) {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(404, "Some flights from the list does not exist")), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new BadRequest(404, "Some flights from the list does not exist"), HttpStatus.NOT_FOUND);
         }
 
         List<Flight> passengerPreviousFlights = new ArrayList<>();
@@ -132,16 +137,16 @@ public class ReservationController {
         Collections.sort(intervals, new IntervalStartComparator());
 
         if (isOverlapping(intervals)) {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Time-Overlap is not allowed!")), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new BadRequest(400, "Time-Overlap is not allowed!"), HttpStatus.BAD_REQUEST);
         }
 
-        Reservation reservation = reservationRepository.save(new Reservation( passenger, price, flights));
+        Reservation reservation = reservationRepository.save(new Reservation(passenger, price, flights));
         // update flights db
         flightRepository.save(flights);
 
 
         if (reservation == null) {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(500, "Internal error")), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new BadRequest(500, "Internal error"), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(reservation, HttpStatus.OK);
     }
@@ -158,22 +163,22 @@ public class ReservationController {
     @Transactional(Transactional.TxType.REQUIRED)
     @RequestMapping(value = "/{number}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateReservation(@PathVariable("number") String number,
-                                             @RequestParam(value = "flightsAdded", required = false) List<String> flightsAdded,
-                                             @RequestParam(value = "flightsRemoved", required = false) List<String> flightsRemoved) {
+                                               @RequestParam(value = "flightsAdded", required = false) List<String> flightsAdded,
+                                               @RequestParam(value = "flightsRemoved", required = false) List<String> flightsRemoved) {
 
         Reservation reservation = reservationRepository.findOne(number);
 
         if (reservation == null) {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(404, "Reserveration with number " + number +" does not exist")), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new BadRequest(404, "Reserveration with number " + number + " does not exist"), HttpStatus.NOT_FOUND);
         }
 
         // If flightsAdded (or flightsRemoved) param exists, then its list of values cannot be empty.
         if (flightsAdded != null && flightsAdded.isEmpty()) {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(404, "flightsAdded list cannot be empty, if param exists")), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new BadRequest(404, "flightsAdded list cannot be empty, if param exists"), HttpStatus.NOT_FOUND);
         }
 
         if (flightsRemoved != null && flightsRemoved.isEmpty()) {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(404, "flightsRemoved list cannot be empty, if param exists")), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new BadRequest(404, "flightsRemoved list cannot be empty, if param exists"), HttpStatus.NOT_FOUND);
 
         }
 
@@ -222,7 +227,7 @@ public class ReservationController {
                 intervals.add(new Interval(departureDateTime.getTime(), arrivalDateTime.getTime()));
                 // The total amount of passengers can not exceed the capacity of the reserved plane.
                 if (flight.decrementSeatsLeftByOne()) {
-                    return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "The total amount of passengers can not exceed the capacity of the reserved plane.")), HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(new BadRequest(400, "The total amount of passengers can not exceed the capacity of the reserved plane."), HttpStatus.BAD_REQUEST);
 
                 }
 
@@ -232,7 +237,7 @@ public class ReservationController {
             }
 
             if (loopCount != flightsAdded.size()) {
-                return new ResponseEntity<>(new BadRequestController(new BadRequest(404, "Some flights from the list does not exist")), HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new BadRequest(404, "Some flights from the list does not exist"), HttpStatus.NOT_FOUND);
             }
 
             List<Flight> passengerPreviousFlights = new ArrayList<>();
@@ -252,7 +257,7 @@ public class ReservationController {
             Collections.sort(intervals, new IntervalStartComparator());
 
             if (isOverlapping(intervals)) {
-                return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Time-Overlap is not allowed!")), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new BadRequest(400, "Time-Overlap is not allowed!"), HttpStatus.BAD_REQUEST);
 
             }
 
@@ -271,9 +276,6 @@ public class ReservationController {
         return new ResponseEntity<>(reservationObjFromDb, HttpStatus.OK);
     }
 
-
-
-
     /**
      * Is overlapping boolean.
      * Checks for overlapping in the flights
@@ -290,7 +292,6 @@ public class ReservationController {
         return false;
     }
 
-
     /**
      * (10) Cancel a reservation.
      *
@@ -303,7 +304,7 @@ public class ReservationController {
         // query db
         Reservation reservation = reservationRepository.findOne(number);
         if (reservation == null) {
-            return new ResponseEntity<>(new Response(404, "Reservation with number " + number + " does not exist"),
+            return new ResponseEntity<>(new BadRequest(404, "Reservation with number " + number + " does not exist"),
                     HttpStatus.NOT_FOUND);
         } else {
             // cancel a reservation for a passenger
@@ -344,36 +345,56 @@ public class ReservationController {
                                                @RequestParam(value = "flightNumber", required = false) String flightNumber) {
 
         System.out.println(passengerId + "-----------" + origin + "-----------" + to + "--------" + flightNumber);
+
         if (passengerId == null && origin == null && to == null && flightNumber == null) {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Atleast one parameter must be present!")), HttpStatus.BAD_REQUEST);
-
-
-            //return new ResponseEntity<>(new BadRequest(new Response(400, "Atleast one parameter must be present!")),
-              //      HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new BadRequest(400, "Atleast one parameter must be present!"), HttpStatus.BAD_REQUEST);
         }
 
         List<Reservation> reservations = reservationRepository.searchForReservations(passengerId, origin, to, flightNumber);
 
-        System.out.println("Search repository" + reservations.get(0).getReservationNumber());
+        JSONObject passengerJSON = new JSONObject();
+        JSONObject reservationJSON = new JSONObject();
+        JSONObject flightJSON = new JSONObject();
+        JSONObject finalJSON = new JSONObject();
+        JSONArray flightJSONArray = new JSONArray();
 
-        // hack: printing passenger at the app layer to avoid infinite recursion
+        finalJSON.put("reservation", reservationJSON);
         for (Reservation reservation : reservations) {
+            reservationJSON.put("reservationNumber", reservation.getReservationNumber());
+            reservationJSON.put("price", reservation.getPrice());
+            reservationJSON.put("passenger", passengerJSON);
+            reservationJSON.put("flights", flightJSON);
 
-            Passenger passenger = passengerRepository.getPassengerByOrderNo(reservation.getReservationNumber());
-            System.out.println(passenger.getFirstname() + passenger.getId() + passenger.getGender());
-            //  reservation.setPassenger(new PassengerLtdInfo(passenger));
-            //  reservation.setPassenger(new Passenger(passenger));
+            passengerJSON.put("id", reservation.getPassenger().getId());
+            passengerJSON.put("firstname", reservation.getPassenger().getFirstname());
+            passengerJSON.put("lastname", reservation.getPassenger().getLastname());
+            passengerJSON.put("age", reservation.getPassenger().getAge());
+            passengerJSON.put("gender", reservation.getPassenger().getGender());
+            passengerJSON.put("phone", reservation.getPassenger().getPhone());
+
+            flightJSON.put("flight", flightJSONArray);
+            for (Flight f : reservation.getFlights()) {
+                JSONObject fJSON = new JSONObject();
+
+                fJSON.put("number", f.getFlightNumber());
+                fJSON.put("price", f.getPrice());
+                fJSON.put("origin", f.getOrigin());
+                fJSON.put("to", f.getDescription());
+                fJSON.put("departureTime", f.getDepartureTime());
+                fJSON.put("arrivalTime", f.getArrivalTime());
+                fJSON.put("seatsLeft", f.getSeatsLeft());
+                fJSON.put("description", f.getDescription());
+                //get plane object in JSON
+                JSONObject planeJson = new JSONObject();
+                planeJson.put("capacity", f.getPlane().getCapacity());
+                planeJson.put("model", f.getPlane().getModel());
+                planeJson.put("manufacturer", f.getPlane().getManufacturer());
+                planeJson.put("year", f.getPlane().getYear());
+                fJSON.put("plane", planeJson);
+                flightJSONArray.put(fJSON);
+            }
         }
-
-        return new ResponseEntity<>(reservations, HttpStatus.OK);
+        System.out.println(finalJSON);
+        return new ResponseEntity<>(XML.toString(finalJSON), HttpStatus.OK);
     }
-    /*private Reservation removePassenger(Reservation reservation){
-        Set<Flight> flights = reservation.getFlights();
-        for(Flight f : flights) {
-            f.setPassengers(null);
-        }
-        reservation.setFlights(flights);
-
-        return reservation;
-    }*/
 }

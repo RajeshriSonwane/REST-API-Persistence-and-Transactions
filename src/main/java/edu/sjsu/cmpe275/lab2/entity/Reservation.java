@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonTypeName("reservation")
 @JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT ,use = JsonTypeInfo.Id.NAME)
+@XmlType(propOrder={"reservationNumber", "price"})
 public class Reservation {
     @Id
     @GeneratedValue(generator = "uuid")

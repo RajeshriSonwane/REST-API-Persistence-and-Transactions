@@ -50,23 +50,22 @@ public class PassengerController {
      * @return the person xml
      */
     @JsonView(View.PassengerView.class)
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET, params = "xml")
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET, params = "xml",  produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> getPersonXml(@PathVariable("id") String id, @RequestParam(value = "xml") String isXml) {
         if (isXml.equals("true")) {
             return getPassengerJson(id);
 
         } else {
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Xml param; found in invalid state!")),
+            return new ResponseEntity<>(new BadRequest(400, "Xml param; found in invalid state!"),
                     HttpStatus.BAD_REQUEST);
         }
-
     }
 
     /**
      * (3) Get a passenger
      *
      * @param id    the id
-     * @param isxml
+    // * @param isxml
      * @return the person xml
      */
     private ResponseEntity<?> getPassenger(String id) {
@@ -75,12 +74,11 @@ public class PassengerController {
 
         if (passenger == null) {
             System.out.println("Not FOund");
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(404, "Sorry, the requested passenger with id " +
-                    id + " does not exist")), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new BadRequest(404, "Sorry, the requested passenger with id " +
+                    id + " does not exist"), HttpStatus.NOT_FOUND);
         } else {
             System.out.println("Found Passenger");
             return new ResponseEntity<>(passenger, HttpStatus.OK);
-
         }
     }
 
@@ -102,14 +100,14 @@ public class PassengerController {
                                             @RequestParam(value="phone") String phone ){
         try{
             if(firstname==null||lastname==null||firstname==""||lastname==""||age== 0||gender==null||gender==""||phone==null||phone==""){
-                return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "all parameters are not filled")), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new BadRequest(400, "all parameters are not filled"), HttpStatus.BAD_REQUEST);
             }else
             {
                 Passenger passenger = passengerRepository.save(new Passenger(firstname,lastname,age,gender,phone));
                 return new ResponseEntity<>(passenger, HttpStatus.OK);
             }
         }catch (DataIntegrityViolationException e){
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "another passenger with the same number already exists.")), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new BadRequest(400, "another passenger with the same number already exists."), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -134,12 +132,12 @@ public class PassengerController {
                                              @RequestParam(value="phone") String phone ){
         try {
             if(id== null||id==""){
-                return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Passenger id is missing")), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new BadRequest(400, "Passenger id is missing"), HttpStatus.BAD_REQUEST);
             }else
             {
                 Passenger passenger = passengerRepository.findOne(id);
                 if(passenger == null)
-                    return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Passenger id doesnt exist")), HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(new BadRequest(400, "Passenger id doesnt exist"), HttpStatus.BAD_REQUEST);
                 else
                 {
                     passenger.setFirstname(firstname);
@@ -153,7 +151,7 @@ public class PassengerController {
                 }
             }
         }catch (DataIntegrityViolationException e){
-            return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "another passenger with the same number already exists.")), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new BadRequest(400, "another passenger with the same number already exists."), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -165,20 +163,16 @@ public class PassengerController {
      */
 
     //@javax.transaction.Transactional(Transactional.TxType.REQUIRED)
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> deletePassenger(@PathVariable("id") String id) {
         Passenger passenger = passengerRepository.findOne(id);
         if (passenger == null) {
-            return new ResponseEntity<>(new Response(404, "Passenger with id " + id + " does not exist"),
+            return new ResponseEntity<>(new BadRequest(404, "Passenger with id " + id + " does not exist"),
                     HttpStatus.NOT_FOUND);
-
         }else{
-
-
             passengerRepository.delete(id);
             return new ResponseEntity<>(new Response(200, "Passenger with id " + id + " is deleted successfully"),
                     HttpStatus.OK);
         }
     }
-
 }

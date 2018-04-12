@@ -17,6 +17,7 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonTypeName("flight")
 @JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT ,use = JsonTypeInfo.Id.NAME)
+@XmlType(propOrder={"flightNumber", "price", "origin", "destination","departureTime", "arrivalTime", "description","seatsLeft", "plane","passengers" })
 public class Flight {
 
     @Id

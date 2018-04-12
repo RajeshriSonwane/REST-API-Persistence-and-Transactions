@@ -5,9 +5,11 @@ import edu.sjsu.cmpe275.lab2.util.View;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlType;
 
 
 @Embeddable
+@XmlType(propOrder={"capacity", "model", "manufacturer", "year" })
 public class Plane {
 
     @Column

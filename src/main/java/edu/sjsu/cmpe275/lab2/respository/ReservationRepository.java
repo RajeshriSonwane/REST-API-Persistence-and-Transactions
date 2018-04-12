@@ -23,7 +23,7 @@ public interface ReservationRepository extends CrudRepository<Reservation, Strin
      * @return the list
      */
     @Query(value = "SELECT DISTINCT * FROM reservationsystem.passenger p, reservationsystem.reservation r, reservationsystem.reservation_flights fr, reservationsystem.flight f " +
-            "WHERE p.id = r.passenger_id AND r.reservation_number = fr.reservation_reservation_number AND fr.flights_flight_number = f.flight_number "+
+            "WHERE p.id = r.passenger_id AND r.reservation_number = fr.reservations_reservation_number AND fr.flights_flight_number = f.flight_number "+
             "AND r.passenger_id = COALESCE(:passengerId,r.passenger_id) AND f.flight_number = COALESCE(:flightNumber,f.flight_number) " +
             "AND f.origin = COALESCE(:dest_from,f.origin) and f.destination = COALESCE(:dest_to,f.destination)",
             nativeQuery = true)
