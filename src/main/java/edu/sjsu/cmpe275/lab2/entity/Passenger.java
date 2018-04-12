@@ -3,42 +3,49 @@ package edu.sjsu.cmpe275.lab2.entity;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import edu.sjsu.cmpe275.lab2.util.View;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.List;
 
 @XmlRootElement
 @Entity
 @Table(name = "passenger")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
 public class Passenger {
 
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @JsonView({View.PassengerView.class, View.ReservationView.class, View.FlightView.class})
     private String id;
 
     @Column(name= "firstname")
+    @JsonView({View.PassengerView.class, View.ReservationView.class, View.FlightView.class})
     private String firstname;
 
     @Column(name= "lastname")
+    @JsonView({View.PassengerView.class, View.ReservationView.class, View.FlightView.class})
     private String lastname;
 
     @Column(name= "age")
+    @JsonView({View.PassengerView.class, View.ReservationView.class, View.FlightView.class})
     private int age;
 
     @Column(name= "gender")
+    @JsonView({View.PassengerView.class, View.ReservationView.class, View.FlightView.class})
     private String gender;
 
     @Column(name = "phone", nullable = false, unique = true)
+    @JsonView({View.PassengerView.class, View.ReservationView.class, View.FlightView.class})
     private String phone;
 
     // reservation made by the passenger should also be deleted.
     @OneToMany(mappedBy = "passenger", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonView(View.PassengerView.class)
     private List<Reservation> reservations;
 
     public Passenger(){
@@ -50,9 +57,6 @@ public class Passenger {
         this.age = age;
         this.gender = gender;
         this.phone = phone;
-    }
-
-    public Passenger(Passenger passenger) {
     }
 
     public String getId() {
@@ -103,7 +107,9 @@ public class Passenger {
         this.phone = phone;
     }
 
+    //@XmlTransient
     public List<Reservation> getReservations() {        return reservations;    }
 
-   public void setReservations(List<Reservation> reservations) {        this.reservations = reservations;    }
+    //@XmlTransient
+    public void setReservations(List<Reservation> reservations) {        this.reservations = reservations;    }
 }

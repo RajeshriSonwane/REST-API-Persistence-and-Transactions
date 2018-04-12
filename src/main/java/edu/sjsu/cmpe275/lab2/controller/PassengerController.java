@@ -1,8 +1,10 @@
 package edu.sjsu.cmpe275.lab2.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import edu.sjsu.cmpe275.lab2.entity.*;
 
 import edu.sjsu.cmpe275.lab2.respository.PassengerRepository;
+import edu.sjsu.cmpe275.lab2.util.View;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -29,6 +31,7 @@ public class PassengerController {
      * @param id the id
      * @return the passenger json
      */
+    @JsonView(View.PassengerView.class)
     @RequestMapping(value = "/{id}",
                     method = RequestMethod.GET,
                     produces = MediaType.APPLICATION_JSON_VALUE)
@@ -168,9 +171,12 @@ public class PassengerController {
                     HttpStatus.NOT_FOUND);
 
         }else{
+
+
             passengerRepository.delete(id);
             return new ResponseEntity<>(new Response(200, "Passenger with id " + id + " is deleted successfully"),
                     HttpStatus.OK);
         }
     }
+
 }

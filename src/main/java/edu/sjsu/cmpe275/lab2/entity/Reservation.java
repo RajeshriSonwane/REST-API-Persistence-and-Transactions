@@ -1,10 +1,11 @@
 package edu.sjsu.cmpe275.lab2.entity;
 
 import com.fasterxml.jackson.annotation.*;
+import edu.sjsu.cmpe275.lab2.util.View;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,27 +16,44 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @Entity
 @Table(name = "reservation")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="passenger")
+//@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+//@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="passenger")
 public class Reservation {
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @JsonView({View.PassengerView.class, View.ReservationView.class})
     private String reservationNumber;
 
+    @JsonView({View.PassengerView.class, View.ReservationView.class})
+    private double price;
+
+
+    @JsonView(View.ReservationView.class)
     @ManyToOne(targetEntity = Passenger.class, fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
     private Passenger passenger;
 
-    private double price;
-
+    @JsonView({View.PassengerView.class, View.ReservationView.class})
     @ManyToMany(targetEntity = Flight.class, fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    private Set<Flight> flights = new HashSet<Flight>();
+    private List<Flight> flights;
 
+    @XmlElement
+    @Transient
+    private PassengerLtdInfo passengerKey;
+
+    public PassengerLtdInfo getPassengerKey() {
+        return passengerKey;
+    }
+
+    public void setPassengerKey(PassengerLtdInfo passengerKey) {
+        this.passengerKey = passengerKey;
+    }
 
     public Reservation(){
 
     }
 
-    public Reservation(Passenger passenger, double price, Set<Flight> flights) {
+    public Reservation(Passenger passenger, double price, List<Flight> flights) {
         this.passenger = passenger;
         this.price = price;
         this.flights = flights;
@@ -49,12 +67,14 @@ public class Reservation {
         this.reservationNumber = reservationNumber;
     }
 
+    @XmlTransient
     public Passenger getPassenger() {
         return passenger;
     }
 
-    public void setPassenger(Passenger passenger) {
-        this.passenger = passenger;
+    //@XmlTransient
+    public void setPassenger(PassengerLtdInfo passengerKey) {
+        this.passengerKey = passengerKey;
     }
 
     public double getPrice() {
@@ -65,11 +85,20 @@ public class Reservation {
         this.price = price;
     }
 
-    public Set<Flight> getFlights() {
+    @XmlTransient
+    public List<Flight> getFlights() {
         return flights;
     }
 
-    public void setFlights(Set<Flight> flights) {
+    public void setFlights(List<Flight> flights) {
         this.flights = flights;
     }
+
+   /* public PassengerInformation getPassengerInfo() {
+        return passengerInfo;
+    }
+
+    public void setPassengerInfo(PassengerInformation passengerInfo) {
+        this.passengerInfo = passengerInfo;
+    }*/
 }

@@ -1,5 +1,7 @@
 package edu.sjsu.cmpe275.lab2.entity;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import edu.sjsu.cmpe275.lab2.util.View;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -9,15 +11,19 @@ import javax.persistence.*;
 public class Plane {
 
     @Column
+    @JsonView({View.PassengerView.class, View.FlightView.class, View.ReservationView.class})
     private int capacity;
 
     @Column
+    @JsonView({View.PassengerView.class, View.FlightView.class, View.ReservationView.class})
     private String model;
 
     @Column
+    @JsonView({View.PassengerView.class, View.FlightView.class, View.ReservationView.class})
     private String manufacturer;
 
     @Column
+    @JsonView({View.PassengerView.class, View.FlightView.class, View.ReservationView.class})
     private int year;
 
     public Plane(){
