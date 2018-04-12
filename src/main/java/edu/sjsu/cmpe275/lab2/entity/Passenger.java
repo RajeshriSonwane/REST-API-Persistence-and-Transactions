@@ -9,12 +9,16 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
 import java.util.List;
 
 @XmlRootElement
 @Entity
 @Table(name = "passenger")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonTypeName("passenger")
+@JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT ,use = JsonTypeInfo.Id.NAME)
+@XmlType(propOrder={"id", "firstname", "lastname", "age", "gender", "reservations"})
 public class Passenger {
 
     @Id

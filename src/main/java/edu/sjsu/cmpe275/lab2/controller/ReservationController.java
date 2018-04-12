@@ -337,7 +337,7 @@ public class ReservationController {
      * @return the response entity
      */
     @Transactional(Transactional.TxType.REQUIRED)
-    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<?> searchReservation(@RequestParam(value = "passengerId", required = false) String passengerId,
                                                @RequestParam(value = "origin", required = false) String origin,
                                                @RequestParam(value = "to", required = false) String to,
@@ -346,22 +346,34 @@ public class ReservationController {
         System.out.println(passengerId + "-----------" + origin + "-----------" + to + "--------" + flightNumber);
         if (passengerId == null && origin == null && to == null && flightNumber == null) {
             return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Atleast one parameter must be present!")), HttpStatus.BAD_REQUEST);
+
+
+            //return new ResponseEntity<>(new BadRequest(new Response(400, "Atleast one parameter must be present!")),
+              //      HttpStatus.BAD_REQUEST);
         }
 
         List<Reservation> reservations = reservationRepository.searchForReservations(passengerId, origin, to, flightNumber);
 
         System.out.println("Search repository" + reservations.get(0).getReservationNumber());
 
-
+        // hack: printing passenger at the app layer to avoid infinite recursion
         for (Reservation reservation : reservations) {
 
             Passenger passenger = passengerRepository.getPassengerByOrderNo(reservation.getReservationNumber());
             System.out.println(passenger.getFirstname() + passenger.getId() + passenger.getGender());
-            reservation.setPassengerKey(new PassengerLtdInfo(passenger));
-
-            System.out.println(reservation);
+            //  reservation.setPassenger(new PassengerLtdInfo(passenger));
+            //  reservation.setPassenger(new Passenger(passenger));
         }
 
         return new ResponseEntity<>(reservations, HttpStatus.OK);
     }
+    /*private Reservation removePassenger(Reservation reservation){
+        Set<Flight> flights = reservation.getFlights();
+        for(Flight f : flights) {
+            f.setPassengers(null);
+        }
+        reservation.setFlights(flights);
+
+        return reservation;
+    }*/
 }

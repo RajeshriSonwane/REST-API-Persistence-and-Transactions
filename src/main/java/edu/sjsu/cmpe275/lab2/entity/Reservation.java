@@ -16,8 +16,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @Entity
 @Table(name = "reservation")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-//@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-//@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="passenger")
+@JsonTypeName("reservation")
+@JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT ,use = JsonTypeInfo.Id.NAME)
 public class Reservation {
     @Id
     @GeneratedValue(generator = "uuid")
@@ -37,17 +37,10 @@ public class Reservation {
     @ManyToMany(targetEntity = Flight.class, fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private List<Flight> flights;
 
-    @XmlElement
-    @Transient
-    private PassengerLtdInfo passengerKey;
-
-    public PassengerLtdInfo getPassengerKey() {
-        return passengerKey;
-    }
-
-    public void setPassengerKey(PassengerLtdInfo passengerKey) {
-        this.passengerKey = passengerKey;
-    }
+    //@XmlElement
+    //@Transient
+    //@XmlTransient
+    //private PassengerInformation passengerInfo;
 
     public Reservation(){
 
@@ -73,8 +66,8 @@ public class Reservation {
     }
 
     //@XmlTransient
-    public void setPassenger(PassengerLtdInfo passengerKey) {
-        this.passengerKey = passengerKey;
+    public void setPassenger(Passenger passenger) {
+        this.passenger = passenger;
     }
 
     public double getPrice() {

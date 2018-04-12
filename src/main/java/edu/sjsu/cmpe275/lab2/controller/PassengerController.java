@@ -6,6 +6,7 @@ import edu.sjsu.cmpe275.lab2.entity.*;
 import edu.sjsu.cmpe275.lab2.respository.PassengerRepository;
 import edu.sjsu.cmpe275.lab2.util.View;
 import org.hibernate.Session;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
+import org.json.XML;
+
 
 
 import java.awt.print.Book;
@@ -36,9 +39,7 @@ public class PassengerController {
                     method = RequestMethod.GET,
                     produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getPassengerJson(@PathVariable("id") String id) {
-
         return getPassenger(id);
-
     }
 
     /**
@@ -48,10 +49,11 @@ public class PassengerController {
      * @param isXml the is xml
      * @return the person xml
      */
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET, params = "xml", produces = MediaType.APPLICATION_XML_VALUE)
+    @JsonView(View.PassengerView.class)
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET, params = "xml")
     public ResponseEntity<?> getPersonXml(@PathVariable("id") String id, @RequestParam(value = "xml") String isXml) {
         if (isXml.equals("true")) {
-            return getPassenger(id);
+            return getPassengerJson(id);
 
         } else {
             return new ResponseEntity<>(new BadRequestController(new BadRequest(400, "Xml param; found in invalid state!")),
@@ -64,7 +66,7 @@ public class PassengerController {
      * (3) Get a passenger
      *
      * @param id    the id
-     * @param is xml
+     * @param isxml
      * @return the person xml
      */
     private ResponseEntity<?> getPassenger(String id) {

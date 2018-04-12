@@ -15,11 +15,13 @@ import java.util.Set;
 @Entity
 @Table(name = "flight")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonTypeName("flight")
+@JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT ,use = JsonTypeInfo.Id.NAME)
 public class Flight {
 
     @Id
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "uuid2")
+   // @GeneratedValue(generator = "uuid")
+   // @GenericGenerator(name = "uuid", strategy = "uuid2")
     @JsonView({View.PassengerView.class, View.ReservationView.class, View.FlightView.class})
     private String flightNumber; // Each flight has a unique flight number.
 
