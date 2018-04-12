@@ -43,7 +43,6 @@ public class ReservationController {
                     number + " does not exist"), HttpStatus.NOT_FOUND);
 
         } else {
-            System.out.println("reservation" + reservation);
             return new ResponseEntity<>(reservation, HttpStatus.OK);
         }
 
@@ -338,7 +337,7 @@ public class ReservationController {
      * @return the response entity
      */
     @Transactional(Transactional.TxType.REQUIRED)
-    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> searchReservation(@RequestParam(value = "passengerId", required = false) String passengerId,
                                                @RequestParam(value = "origin", required = false) String origin,
                                                @RequestParam(value = "to", required = false) String to,
@@ -395,6 +394,6 @@ public class ReservationController {
             }
         }
         System.out.println(finalJSON);
-        return new ResponseEntity<>(XML.toString(finalJSON), HttpStatus.OK);
+        return new ResponseEntity<>(finalJSON, HttpStatus.OK);
     }
 }
